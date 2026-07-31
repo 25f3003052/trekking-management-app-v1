@@ -1,31 +1,30 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from config import DevelopmentConfig
+from models import db
+import models
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///todo.db"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+app.config.from_object(DevelopmentConfig)
+db.init_app(app) # linkin the database with the app. 
+
+from routes import *
 
 
 
-class Todo(db.Model):
-    sno = db.Column(db.Integer , primary_key = True)
-    title = db.Column(db.String(200) , nullable = False)
-    desc = db.Column(db.String(500) , nullable = False)
-    data_created = db.Column(db.DateTime , default = datetime.utcnow)
-
-    def __repr__(self):  #
-        return f"{self.sno} - {self.title}"
-
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
 
 
+# Flask -> 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+    with app.app_context(): 
+        db.create_all() 
+        admin = models.User.query.filter_by(user_name='admin').first()
+        if not admin:
+            admin = models.User(user_name='admin',name='admin',email_id="admin@gmail.com",address="address",is_admin=True,pincode=234,age=30,gender="Male",phone="234234")
 
-    app.run(debug=True, port=8000 )
+            admin.set_password("admin")
+            db.session.add(admin)
+            db.session.commit()
 
+
+    app.run(debug=True,port=8000)
