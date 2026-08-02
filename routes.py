@@ -170,3 +170,100 @@ def logout():
     session.clear()
     flash('You have been logged out...', category='success')
     return redirect('/')
+
+
+# --------------- Dashboards ----------------
+
+# admin routes
+@app.route('/admin')
+def admin_dashboard():
+    if 'user_id' not in session:
+        flash('Please log in.', category='error')
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user.is_admin:
+        flash('Access denied. Admins Only.', category='error')
+        return redirect('/login')
+    treks = Trek.query.all() # storing all the info related to Trek table
+    staff_list = Staff.query.all() 
+    approved_staff = Staff.query.filter_by(is_approved=True, is_blocked=False).all()
+    trekkers = user.query.filter_by(is_admin=False).all()
+    bookings = Booking.query.all()
+    return render_template('admin_dashboard.html', user=user, treks=treks, staff_list=staff_list, approved_staff=approved_staff, trekkers=trekkers, bookings=bookings) # will be used in admin_dashboard.html frontend render part 
+
+# --- Assign Staff to Trek (inline from dashboard) ---
+@app.route('/assign_staff/<int:trek_id>', methods=['POST'])
+def assign_staff(trek_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', category='error')
+        return redirect('/login')
+    
+    trek = Trek.query.get_or_404(trek_id)
+    staff_id = request.form.get('staff_id')
+    if staff_id:
+        staff = Staff.query.get_or_404(int(staff_id))
+        if not staff.is_approved or staff.is_blocked:
+            flash('Only approved and active staff can be assigned.', category='error')
+            return redirect('/admin')
+        trek.assigned_staff_id = staff.id
+        flash(f"Staff '{staff.name}' assigned to '{trek.trek_name}'!", category='success')
+    else:
+        trek.assigned_staff_id = None
+        flash(f'Staff removed from "{trek.trek_name}".', category='success')
+    
+    db.session.commit()
+    return redirect('/admin')
+
+# --- Add Trek ---
+@app.route('/add_trek', methods=['GET', 'POST'])
+def add_trek():
+    if 'user_id' not in session:
+        flash('Please log in.', 'error')
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    staff_list = Staff.query.filter_by(is_approved=True, is_blocked=False).all()
+
+    if request.method == 'GET':
+        return render_template('add_trek.html', user=user, staff_list=staff_list)
+
+    trek_name = request.form.get('trek_name')
+    location = request.form.get('location')
+    difficulty = request.form.get('difficulty')
+    duration_days = request.form.get('duration_days')
+    total_slots = request.form.get('total_slots')
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+    description = request.form.get('description')
+    assigned_staff_id = request.form.get('assigned_staff_id')
+    status = request.form.get('status', 'Pending')
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else date_class.today()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else date_class.today()
+    except:
+        flash("Invalid date format.", "error")
+        return redirect('/add_trek')
+
+    slots = int(total_slots) if total_slots else 20
+
+    new_trek = Trek(
+        trek_name=trek_name, location=location, difficulty=difficulty,
+        duration_days=int(duration_days) if duration_days else 1,
+        total_slots=slots, available_slots=slots,
+        status=status, start_date=start_date, end_date=end_date,
+        description=description,
+        assigned_staff_id=int(assigned_staff_id) if assigned_staff_id else None,
+        created_by=session['user_id']
+    )
+    db.session.add(new_trek)
+    db.session.commit()
+    flash("Trek added successfully!", "success")
+    return redirect("/admin")
+
