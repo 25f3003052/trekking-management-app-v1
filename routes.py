@@ -267,3 +267,194 @@ def add_trek():
     flash("Trek added successfully!", "success")
     return redirect("/admin")
 
+
+# --- Edit Trek ---
+@app.route('/edit_trek/<int:trek_id>', methods=['GET', 'POST'])
+def edit_trek(trek_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    trek = Trek.query.get_or_404(trek_id)
+    staff_list = Staff.query.filter_by(is_approved=True, is_blocked=False).all()
+
+    if request.method == 'GET':
+        return render_template('edit_trek.html', user=user, trek=trek, staff_list=staff_list)
+
+    trek.trek_name = request.form.get('trek_name')
+    trek.location = request.form.get('location')
+    trek.difficulty = request.form.get('difficulty')
+    trek.duration_days = int(request.form.get('duration_days', 1))
+    trek.total_slots = int(request.form.get('total_slots', 20))
+    trek.available_slots = int(request.form.get('available_slots', trek.available_slots))
+    trek.status = request.form.get('status', trek.status)
+    trek.description = request.form.get('description')
+
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+    try:
+        if start_date_str:
+            trek.start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        if end_date_str:
+            trek.end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except:
+        flash("Invalid date format.", "error")
+        return redirect(f'/edit_trek/{trek_id}')
+
+    assigned_staff_id = request.form.get('assigned_staff_id')
+    trek.assigned_staff_id = int(assigned_staff_id) if assigned_staff_id else None
+
+    db.session.commit()
+    flash("Trek updated successfully!", "success")
+    return redirect("/admin")
+
+# delete trek
+@app.route('/delete_trek/<int:trek_id>', methods=['POST'])
+def delete_trek(trek_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    trek = Trek.query.get_or_404(trek_id)
+    db.session.delete(trek)
+    db.session.commit()
+    flash("Trek deleted successfully!", "success")
+    return redirect('/admin')
+
+# --- Approve / Reject Staff ---
+@app.route('/approve_staff/<int:staff_id>', methods=['POST'])
+def approve_staff(staff_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    staff = Staff.query.get_or_404(staff_id)
+    staff.is_approved = True
+    db.session.commit()
+    flash(f"Staff {staff.name} approved!", "success")
+    return redirect('/admin')
+
+@app.route('/reject_staff/<int:staff_id>', methods=['POST'])
+def reject_staff(staff_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    staff = Staff.query.get_or_404(staff_id)
+    db.session.delete(staff)
+    db.session.commit()
+    flash("Staff registration rejected.", "success")
+    return redirect('/admin')
+
+
+
+# --- Block / Unblock Staff ---
+@app.route('/staff/block/<int:staff_id>', methods=['POST'])
+def block_staff(staff_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+    staff = Staff.query.get_or_404(staff_id)
+    staff.is_blocked = True
+    db.session.commit()
+    flash("Staff blocked.", "success")
+    return redirect("/admin")
+
+@app.route('/staff/unblock/<int:staff_id>', methods=['POST'])
+def unblock_staff(staff_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+    staff = Staff.query.get_or_404(staff_id)
+    staff.is_blocked = False
+    db.session.commit()
+    flash("Staff unblocked.", "success")
+    return redirect("/admin")
+
+
+# --- Edit Staff ---
+@app.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])
+def edit_staff(staff_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    staff = Staff.query.get_or_404(staff_id)
+    if request.method == 'GET':
+        return render_template('edit_staff.html', staff=staff)
+
+    staff.user_name = request.form.get('username')
+    staff.name = request.form.get('name')
+    staff.email_id = request.form.get('email')
+    staff.phone = request.form.get('phone')
+    staff.experience = request.form.get('experience')
+    db.session.commit()
+    flash("Staff updated.", "success")
+    return redirect("/admin")
+
+@app.route('/staff/details/<int:staff_id>')
+def staff_details(staff_id):
+    staff = Staff.query.get_or_404(staff_id)
+
+    if session.get('role') == 'admin' and 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if not user or not user.is_admin:
+            flash('Access denied.', 'error')
+            return redirect('/login')
+        assigned_treks = Trek.query.filter_by(assigned_staff_id=staff.id).all()
+        return render_template(
+            'staff_details.html',
+            staff=staff,
+            assigned_treks=assigned_treks,
+            viewer_role='admin',
+            back_url='/admin'
+        )
+
+    if session.get('role') == 'trekker' and 'user_id' in session:
+        booking = Booking.query.join(Trek).filter(
+            Booking.user_id == session['user_id'],
+            Booking.status != 'Cancelled',
+            Trek.assigned_staff_id == staff.id
+        ).first()
+        if not booking:
+            flash('You can view details only for staff assigned to your registered treks.', 'error')
+            return redirect('/user')
+
+        assigned_treks = [
+            b.trek for b in Booking.query.join(Trek).filter(
+                Booking.user_id == session['user_id'],
+                Booking.status != 'Cancelled',
+                Trek.assigned_staff_id == staff.id
+            ).all()
+        ]
+        return render_template(
+            'staff_details.html',
+            staff=staff,
+            assigned_treks=assigned_treks,
+            viewer_role='trekker',
+            back_url='/user'
+        )
+
+    flash('Please log in.', 'error')
+    return redirect('/login')
