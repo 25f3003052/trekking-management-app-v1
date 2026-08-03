@@ -458,3 +458,114 @@ def staff_details(staff_id):
 
     flash('Please log in.', 'error')
     return redirect('/login')
+
+
+# --- Block / Unblock / Edit / Delete Trekker ---
+@app.route('/trekker/block/<int:trekker_id>', methods=['POST'])
+def block_trekker(trekker_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+    trekker = User.query.get_or_404(trekker_id)
+    trekker.is_blocked = True
+    db.session.commit()
+    flash("Trekker blocked.", "success")
+    return redirect("/admin")
+
+@app.route('/trekker/unblock/<int:trekker_id>', methods=['POST'])
+def unblock_trekker(trekker_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+    trekker = User.query.get_or_404(trekker_id)
+    trekker.is_blocked = False
+    db.session.commit()
+    flash("Trekker unblocked.", "success")
+    return redirect("/admin")
+
+@app.route('/trekker/edit/<int:trekker_id>', methods=['GET', 'POST'])
+def edit_trekker(trekker_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    flash("Admins cannot edit trekker profiles.", "error")
+    return redirect("/admin")
+
+@app.route('/trekker/delete/<int:trekker_id>', methods=['POST'])
+def delete_trekker(trekker_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+    trekker = User.query.get_or_404(trekker_id)
+    db.session.delete(trekker)
+    db.session.commit()
+    flash("Trekker deleted.", "success")
+    return redirect("/admin")
+
+@app.route('/trekker/history/<int:trekker_id>')
+def trekker_history(trekker_id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    admin = User.query.get(session['user_id'])
+    if not admin.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+
+    trekker = User.query.get_or_404(trekker_id)
+    bookings = Booking.query.filter_by(user_id=trekker_id).order_by(Booking.booking_date.desc()).all()
+    return render_template("trekker_history.html", trekker=trekker, bookings=bookings)
+
+
+# --- Admin Search ---
+@app.route("/admin/search")
+def admin_search():
+    if "user_id" not in session:
+        flash("Please log in.", "error")
+        return redirect("/login")
+    user = User.query.get(session["user_id"])
+    if not user.is_admin:
+        flash("Access denied.", "error")
+        return redirect("/login")
+
+    query = request.args.get("q", "").strip()
+    if query == "":
+        return render_template("admin_search.html", treks=[], staff_list=[], trekkers=[], query="")
+
+    treks = Trek.query.filter(
+        Trek.trek_name.ilike(f"%{query}%") | Trek.location.ilike(f"%{query}%")
+    ).all()
+
+    staff_list = Staff.query.filter(
+        Staff.name.ilike(f"%{query}%") |
+        Staff.user_name.ilike(f"%{query}%") |
+        Staff.email_id.ilike(f"%{query}%")
+    ).all()
+
+    trekkers = User.query.filter(
+        User.is_admin == False,
+        (User.name.ilike(f"%{query}%") | User.email_id.ilike(f"%{query}%"))
+    ).all()
+
+    return render_template("admin_search.html", treks=treks, staff_list=staff_list,
+                           trekkers=trekkers, query=query)
+
+# --- All Bookings ---
+@app.route('/all_bookings')
+def all_bookings():
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = User.query.get(session['user_id'])
+    if not user.is_admin:
+        flash('Access denied.', 'error')
+        return redirect('/login')
+    bookings = Booking.query.order_by(Booking.booking_date.desc()).all()
+    return render_template('all_bookings.html', user=user, bookings=bookings)
+
