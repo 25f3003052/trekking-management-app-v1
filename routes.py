@@ -1,6 +1,6 @@
 from flask import render_template, redirect, session, request, flash
 from app import app
-from models import * 
+from database.models import * 
 from datetime import datetime, date as date_class
 
 
