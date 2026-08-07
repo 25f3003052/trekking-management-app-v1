@@ -1,0 +1,54 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Guide Dashboard — Project Epsilon 3{% endblock %}
+
+{% block nav_links %}
+    <a href="/staff/dashboard" class="nav-link-custom active">My Expeditions</a>
+{% endblock %}
+
+{% block content %}
+<h1 style="margin: 0 0 0.5rem; font-size: 1.75rem;">Expedition Leader Panel</h1>
+<p class="text-slate" style="margin: 0 0 2rem;">Manage status and capacity for your assigned expeditions.</p>
+
+{% for exp in expeditions %}
+<div class="alpine-card" style="margin-bottom: 1.25rem;">
+    <div class="card-header-alpine" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <span>{{ exp.title }}</span>
+        {% if exp.expedition_status == 'Open' %}
+            <span class="alpine-badge badge-open">{{ exp.expedition_status }}</span>
+        {% elif exp.expedition_status == 'Completed' %}
+            <span class="alpine-badge badge-closed">{{ exp.expedition_status }}</span>
+        {% else %}
+            <span class="alpine-badge badge-pending">{{ exp.expedition_status }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body-alpine">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <p style="margin: 0;"><span class="text-slate">Zone:</span> {{ exp.zone }}</p>
+            <p style="margin: 0;"><span class="text-slate">Difficulty:</span> {{ exp.difficulty_grade }}</p>
+            <p style="margin: 0;"><span class="text-slate">Dates:</span> {{ exp.start_date.strftime('%b %d') }} – {{ exp.end_date.strftime('%b %d, %Y') }}</p>
+            <p style="margin: 0;"><span class="text-slate">Capacity:</span> {{ exp.available_seats }} / {{ exp.max_participants }}</p>
+        </div>
+        <form method="POST" action="/staff/update/{{ exp.expedition_id }}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+                <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Status</label>
+                <select class="alpine-select" name="status" style="min-width: 160px;">
+                    <option value="Open" {% if exp.expedition_status == 'Open' %}selected{% endif %}>Open</option>
+                    <option value="Closed" {% if exp.expedition_status == 'Closed' %}selected{% endif %}>Closed</option>
+                    <option value="Completed" {% if exp.expedition_status == 'Completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Available Seats</label>
+                <input class="alpine-input" type="number" name="seats" value="{{ exp.available_seats }}" min="0" max="{{ exp.max_participants }}" style="width: 120px;">
+            </div>
+            <button type="submit" class="btn-alpine-primary">Update Expedition</button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alpine-card">
+    <div class="card-body-alpine text-slate">No expeditions assigned to you yet.</div>
+</div>
+{% endfor %}
+{% endblock %}

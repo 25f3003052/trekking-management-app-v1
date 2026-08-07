@@ -1,0 +1,80 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Explorer Dashboard — Project Epsilon 3{% endblock %}
+
+{% block nav_links %}
+    <a href="/portal/dashboard" class="nav-link-custom active">Expeditions</a>
+{% endblock %}
+
+{% block content %}
+<h1 style="margin: 0 0 0.5rem; font-size: 1.75rem;">Explorer Dashboard</h1>
+<p class="text-slate" style="margin: 0 0 2rem;">Browse open expeditions and manage your reservations.</p>
+
+<form method="GET" action="/portal/dashboard" style="display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap;">
+    <input class="alpine-input" type="search" name="q" value="{{ search_query or '' }}" placeholder="Search expeditions by title..." style="flex: 1; min-width: 220px;">
+    <button type="submit" class="btn-alpine-primary">Search</button>
+    {% if search_query %}
+        <a href="/portal/dashboard" class="btn-alpine-secondary">Clear</a>
+    {% endif %}
+</form>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+    {% for exp in expeditions %}
+    <div class="alpine-card">
+        <div class="card-header-alpine" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+            <span>{{ exp.title }}</span>
+            <span class="alpine-badge badge-open">{{ exp.expedition_status }}</span>
+        </div>
+        <div class="card-body-alpine">
+            <p style="margin: 0 0 0.5rem;"><span class="text-slate">Zone:</span> {{ exp.zone }}</p>
+            <p style="margin: 0 0 0.5rem;"><span class="text-slate">Difficulty:</span> {{ exp.difficulty_grade }}</p>
+            <p style="margin: 0 0 0.5rem;"><span class="text-slate">Dates:</span> {{ exp.start_date.strftime('%b %d, %Y') }} – {{ exp.end_date.strftime('%b %d, %Y') }}</p>
+            <p style="margin: 0 0 1rem;"><span class="text-slate">Seats:</span> <strong class="text-emerald">{{ exp.available_seats }}</strong> / {{ exp.max_participants }}</p>
+            {% if exp.expedition_id in reserved_ids %}
+                <span class="alpine-badge badge-open">Already Reserved</span>
+            {% elif exp.available_seats > 0 %}
+                <form method="POST" action="/portal/book/{{ exp.expedition_id }}">
+                    <button type="submit" class="btn-alpine-primary">Reserve Seat</button>
+                </form>
+            {% else %}
+                <span class="alpine-badge badge-closed">Full</span>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alpine-card" style="grid-column: 1 / -1;">
+        <div class="card-body-alpine text-slate">No open expeditions found.</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="alpine-card">
+    <div class="card-header-alpine">My Reservations</div>
+    <div class="card-body-alpine" style="padding: 0; overflow-x: auto;">
+        <table class="alpine-table">
+            <thead>
+                <tr>
+                    <th>Expedition</th>
+                    <th>Zone</th>
+                    <th>Booked On</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in my_bookings %}
+                <tr>
+                    <td>{{ booking.expedition.title }}</td>
+                    <td>{{ booking.expedition.zone }}</td>
+                    <td>{{ booking.booked_at.strftime('%b %d, %Y') }}</td>
+                    <td><span class="alpine-badge badge-open">{{ booking.expedition.expedition_status }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-slate">You have no reservations yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

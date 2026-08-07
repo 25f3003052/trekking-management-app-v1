@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Project Epsilon 3</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme_epsilon.css') }}">
+</head>
+<body>
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+        <div style="width: 100%; max-width: 480px;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <a href="/" class="alpine-brand" style="justify-content: center; font-size: 1.75rem;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 2L2 22h20L12 2z" fill="#f59e0b" opacity="0.9"/>
+                        <path d="M12 8l-4 8h8l-4-8z" fill="#090e17"/>
+                    </svg>
+                    Epsilon <span>3</span>
+                </a>
+                <p class="text-slate" style="margin-top: 0.75rem;">Alpine Trekking &amp; Expedition Platform</p>
+            </div>
+
+            <div class="alpine-card">
+                <div class="card-header-alpine">
+                    {% if show_register %}Create Account{% else %}Sign In{% endif %}
+                </div>
+                <div class="card-body-alpine">
+                    {% if error_message %}
+                        <div class="alpine-badge badge-danger" style="display: block; margin-bottom: 1rem; text-transform: none; font-size: 0.85rem; padding: 0.75rem 1rem;">
+                            {{ error_message }}
+                        </div>
+                    {% endif %}
+                    {% if success_message %}
+                        <div class="alpine-badge badge-open" style="display: block; margin-bottom: 1rem; text-transform: none; font-size: 0.85rem; padding: 0.75rem 1rem;">
+                            {{ success_message }}
+                        </div>
+                    {% endif %}
+                    {% if reg_error %}
+                        <div class="alpine-badge badge-danger" style="display: block; margin-bottom: 1rem; text-transform: none; font-size: 0.85rem; padding: 0.75rem 1rem;">
+                            {{ reg_error }}
+                        </div>
+                    {% endif %}
+
+                    {% if show_register %}
+                    <form method="POST" action="/portal/register">
+                        <div style="margin-bottom: 1rem;">
+                            <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Username</label>
+                            <input class="alpine-input" type="text" name="username" required autocomplete="username">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Password</label>
+                            <input class="alpine-input" type="password" name="password" required autocomplete="new-password">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Role</label>
+                            <select class="alpine-select" name="role">
+                                <option value="trekker">Trekker / Client</option>
+                                <option value="guide">Guide (requires verification)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-alpine-primary" style="width: 100%;">Register</button>
+                    </form>
+                    <p style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem;">
+                        <span class="text-slate">Already have an account?</span>
+                        <a href="/portal/login" class="text-amber" style="font-weight: 600; text-decoration: none;">Sign in</a>
+                    </p>
+                    {% else %}
+                    <form method="POST" action="/portal/login">
+                        <div style="margin-bottom: 1rem;">
+                            <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Username</label>
+                            <input class="alpine-input" type="text" name="username" required autocomplete="username">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Password</label>
+                            <input class="alpine-input" type="password" name="password" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn-alpine-primary" style="width: 100%;">Sign In</button>
+                    </form>
+                    <p style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem;">
+                        <span class="text-slate">New here?</span>
+                        <a href="/portal/register" class="text-amber" style="font-weight: 600; text-decoration: none;">Create account</a>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="alpine-card" style="margin-top: 1.5rem;">
+                <div class="card-header-alpine">Demo Credentials</div>
+                <div class="card-body-alpine" style="font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem;"><strong class="text-amber">Manager:</strong> <span class="text-slate">manager / manager</span></p>
+                    <p style="margin: 0 0 0.5rem;"><strong class="text-emerald">Guide:</strong> <span class="text-slate">charlie_guide / password123</span></p>
+                    <p style="margin: 0;"><strong class="text-emerald">Client:</strong> <span class="text-slate">alice_client / password123</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

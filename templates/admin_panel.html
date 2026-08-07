@@ -1,0 +1,183 @@
+{% extends "base_layout.html" %}
+
+{% block title %}Admin Console — Project Epsilon 3{% endblock %}
+
+{% block nav_links %}
+    <a href="/admin/dashboard" class="nav-link-custom active">Admin Console</a>
+{% endblock %}
+
+{% block content %}
+<h1 style="margin: 0 0 0.5rem; font-size: 1.75rem;">Manager Console</h1>
+<p class="text-slate" style="margin: 0 0 2rem;">Create expeditions, verify guides, and manage the platform roster.</p>
+
+<div class="alpine-card" style="margin-bottom: 2rem;">
+    <div class="card-header-alpine">Create New Expedition</div>
+    <div class="card-body-alpine">
+        <form method="POST" action="/admin/create_expedition">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Title</label>
+                    <input class="alpine-input" type="text" name="title" required>
+                </div>
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Zone</label>
+                    <input class="alpine-input" type="text" name="zone" required>
+                </div>
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Difficulty</label>
+                    <input class="alpine-input" type="text" name="difficulty" placeholder="e.g. Moderate" required>
+                </div>
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Max Participants</label>
+                    <input class="alpine-input" type="number" name="max_participants" value="10" min="1" required>
+                </div>
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Start Date</label>
+                    <input class="alpine-input" type="date" name="start_date" required>
+                </div>
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">End Date</label>
+                    <input class="alpine-input" type="date" name="end_date" required>
+                </div>
+                <div>
+                    <label class="text-slate" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600;">Lead Guide</label>
+                    <select class="alpine-select" name="lead_guide_id">
+                        <option value="">Unassigned</option>
+                        {% for guide in guides if guide.is_verified and guide.is_enabled %}
+                        <option value="{{ guide.user_id }}">{{ guide.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-alpine-primary">Create Expedition</button>
+        </form>
+    </div>
+</div>
+
+<div class="alpine-card" style="margin-bottom: 2rem;">
+    <div class="card-header-alpine">All Expeditions</div>
+    <div class="card-body-alpine" style="padding: 0; overflow-x: auto;">
+        <table class="alpine-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Zone</th>
+                    <th>Guide</th>
+                    <th>Seats</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in expeditions %}
+                <tr>
+                    <td>{{ exp.title }}</td>
+                    <td>{{ exp.zone }}</td>
+                    <td>{{ exp.guide.username if exp.guide else '—' }}</td>
+                    <td>{{ exp.available_seats }} / {{ exp.max_participants }}</td>
+                    <td>
+                        {% if exp.expedition_status == 'Open' %}
+                            <span class="alpine-badge badge-open">{{ exp.expedition_status }}</span>
+                        {% else %}
+                            <span class="alpine-badge badge-closed">{{ exp.expedition_status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-slate">No expeditions yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+    <div class="alpine-card">
+        <div class="card-header-alpine">Guide Roster</div>
+        <div class="card-body-alpine" style="padding: 0; overflow-x: auto;">
+            <table class="alpine-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guide in guides %}
+                    <tr>
+                        <td>{{ guide.username }}</td>
+                        <td>
+                            {% if not guide.is_enabled %}
+                                <span class="alpine-badge badge-danger">Suspended</span>
+                            {% elif guide.is_verified %}
+                                <span class="alpine-badge badge-open">Verified</span>
+                            {% else %}
+                                <span class="alpine-badge badge-pending">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            {% if not guide.is_verified and guide.is_enabled %}
+                            <form method="POST" action="/admin/verify/{{ guide.user_id }}">
+                                <button type="submit" class="btn-alpine-success">Verify</button>
+                            </form>
+                            {% endif %}
+                            {% if guide.is_enabled %}
+                            <form method="POST" action="/admin/suspend/{{ guide.user_id }}">
+                                <button type="submit" class="btn-alpine-danger">Suspend</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-slate">No guides registered.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="alpine-card">
+        <div class="card-header-alpine">Trekker Roster</div>
+        <div class="card-body-alpine" style="padding: 0; overflow-x: auto;">
+            <table class="alpine-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trekker in trekkers %}
+                    <tr>
+                        <td>{{ trekker.username }}</td>
+                        <td>
+                            {% if trekker.is_enabled %}
+                                <span class="alpine-badge badge-open">Active</span>
+                            {% else %}
+                                <span class="alpine-badge badge-danger">Suspended</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if trekker.is_enabled %}
+                            <form method="POST" action="/admin/suspend/{{ trekker.user_id }}">
+                                <button type="submit" class="btn-alpine-danger">Suspend</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-slate">No trekkers registered.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
