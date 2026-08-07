@@ -54,67 +54,75 @@ def seed_database():
 
         # Re-fetch ids after commit
         guide_id = guide_user.user_id if guide_user else None
+        client_user = UserAccount.query.filter_by(username='alice_client').first()
 
-        # 4. Seed Sample Expeditions
-        if Expedition.query.count() == 0:
-            now = datetime.utcnow()
-            expeditions_data = [
-                Expedition(
-                    title="Everest Base Camp Alpine Trail",
-                    zone="Himalayas, Nepal",
-                    difficulty_grade="Challenging",
-                    max_participants=12,
-                    available_seats=12,
-                    start_date=now + timedelta(days=30),
-                    end_date=now + timedelta(days=45),
-                    lead_guide_id=guide_id,
-                    expedition_status='Open'
-                ),
-                Expedition(
-                    title="Patagonia Fitz Roy Traverse",
-                    zone="Andes, Argentina",
-                    difficulty_grade="Advanced",
-                    max_participants=10,
-                    available_seats=9,
-                    start_date=now + timedelta(days=20),
-                    end_date=now + timedelta(days=30),
-                    lead_guide_id=guide_id,
-                    expedition_status='Open'
-                ),
-                Expedition(
-                    title="Mont Blanc Circuit Expedition",
-                    zone="Alps, France/Italy",
-                    difficulty_grade="Moderate",
-                    max_participants=15,
-                    available_seats=15,
-                    start_date=now + timedelta(days=15),
-                    end_date=now + timedelta(days=25),
-                    lead_guide_id=guide_id,
-                    expedition_status='Open'
-                ),
-                Expedition(
-                    title="Kilimanjaro Uhuru Peak Ascent",
-                    zone="Tanzania, Africa",
-                    difficulty_grade="High Altitude / Moderate",
-                    max_participants=14,
-                    available_seats=14,
-                    start_date=now + timedelta(days=60),
-                    end_date=now + timedelta(days=68),
-                    lead_guide_id=None,
-                    expedition_status='Open'
-                )
-            ]
-            db.session.add_all(expeditions_data)
+        # 4. Seed Sample Expeditions (add each by title if missing)
+        now = datetime.utcnow()
+        sample_expeditions = [
+            {
+                "title": "Everest Base Camp Alpine Trail",
+                "zone": "Himalayas, Nepal",
+                "difficulty_grade": "Challenging",
+                "max_participants": 12,
+                "available_seats": 12,
+                "start_date": now + timedelta(days=30),
+                "end_date": now + timedelta(days=45),
+                "lead_guide_id": guide_id,
+            },
+            {
+                "title": "Patagonia Fitz Roy Traverse",
+                "zone": "Andes, Argentina",
+                "difficulty_grade": "Advanced",
+                "max_participants": 10,
+                "available_seats": 9,
+                "start_date": now + timedelta(days=20),
+                "end_date": now + timedelta(days=30),
+                "lead_guide_id": guide_id,
+            },
+            {
+                "title": "Mont Blanc Circuit Expedition",
+                "zone": "Alps, France/Italy",
+                "difficulty_grade": "Moderate",
+                "max_participants": 15,
+                "available_seats": 15,
+                "start_date": now + timedelta(days=15),
+                "end_date": now + timedelta(days=25),
+                "lead_guide_id": guide_id,
+            },
+            {
+                "title": "Kilimanjaro Uhuru Peak Ascent",
+                "zone": "Tanzania, Africa",
+                "difficulty_grade": "High Altitude / Moderate",
+                "max_participants": 14,
+                "available_seats": 14,
+                "start_date": now + timedelta(days=60),
+                "end_date": now + timedelta(days=68),
+                "lead_guide_id": None,
+            },
+        ]
+
+        added_count = 0
+        for exp_data in sample_expeditions:
+            if Expedition.query.filter_by(title=exp_data["title"]).first():
+                continue
+            db.session.add(Expedition(expedition_status='Open', **exp_data))
+            added_count += 1
+
+        if added_count:
             db.session.commit()
 
-            # Optional: Book 1 seat for alice_client on Patagonia Fitz Roy Traverse
-            patagonia = Expedition.query.filter_by(title="Patagonia Fitz Roy Traverse").first()
-            if patagonia and client_user:
-                booking = TrekBooking(
+        # Book 1 seat for alice_client on Patagonia if not already booked
+        patagonia = Expedition.query.filter_by(title="Patagonia Fitz Roy Traverse").first()
+        if patagonia and client_user:
+            existing_booking = TrekBooking.query.filter_by(
+                trekker_id=client_user.user_id,
+                expedition_id=patagonia.expedition_id,
+            ).first()
+            if not existing_booking:
+                db.session.add(TrekBooking(
                     trekker_id=client_user.user_id,
-                    expedition_id=patagonia.expedition_id
-                )
-                db.session.add(booking)
+                    expedition_id=patagonia.expedition_id,
+                ))
                 db.session.commit()
 
         print("================================================================")
