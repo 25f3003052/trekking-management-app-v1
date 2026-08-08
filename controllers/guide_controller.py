@@ -5,15 +5,16 @@ guide_controller = Blueprint('guide_controller', __name__, url_prefix='/staff')
 
 
 def _is_guide_logged_in() -> bool:
-    """Helper to verify if the active session belongs to a verified expedition guide."""
+
+    # Helper to verify if the active session belongs to a verified expedition guide
     return session.get('user_role') == 'guide' and 'user_id' in session
 
 
 @guide_controller.route('/dashboard')
 def leader_dashboard():
-    """
-    Expedition Leader Panel: Displays expeditions assigned to the logged-in guide.
-    """
+    
+    # Expedition assigned guide Panel: Displays expeditions assigned to the logged-in guide.
+
     if not _is_guide_logged_in():
         return redirect('/portal/login')
 
@@ -23,9 +24,9 @@ def leader_dashboard():
 
 @guide_controller.route('/update/<int:exp_id>', methods=['POST'])
 def update_expedition_status(exp_id: int):
-    """
-    Allows the assigned guide to adjust status and available seat count for an expedition.
-    """
+    
+    # Allows the assigned guide to adjust status and available seat count for an expedition assigned to them.
+    
     if not _is_guide_logged_in():
         return redirect('/portal/login')
 

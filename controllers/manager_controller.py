@@ -6,16 +6,15 @@ manager_controller = Blueprint('manager_controller', __name__, url_prefix='/admi
 
 
 def _is_manager_logged_in() -> bool:
-    """Verifies that the session user has 'manager' admin privileges."""
+    # Verifies that the session user has 'manager' admin privileges
     return session.get('user_role') == 'manager' and 'user_id' in session
 
 
 @manager_controller.route('/dashboard')
 def admin_dashboard():
-    """
-    Manager Console: Displays all expeditions, guide roster, trekker roster,
-    and controls for expedition creation and account verification/suspension.
-    """
+    
+    # Manager Console: Displays all expeditions, guide roster, trekker roster and controls for expedition creation and account verification/suspension.
+    
     if not _is_manager_logged_in():
         return redirect('/portal/login')
 
@@ -33,9 +32,9 @@ def admin_dashboard():
 
 @manager_controller.route('/create_expedition', methods=['POST'])
 def create_new_expedition():
-    """
-    Creates a new trekking expedition and optionally assigns an approved guide.
-    """
+    
+    # Creates a new trekking expedition and optionally assigns an approved guide.
+    
     if not _is_manager_logged_in():
         return redirect('/portal/login')
 
@@ -72,9 +71,9 @@ def create_new_expedition():
 
 @manager_controller.route('/verify/<int:account_id>', methods=['POST'])
 def verify_guide_account(account_id: int):
-    """
-    Approves a pending guide account so they can log in and manage expeditions.
-    """
+    
+    # Approves a pending guide account so they can log in and manage expeditions.
+    
     if not _is_manager_logged_in():
         return redirect('/portal/login')
 
@@ -88,9 +87,9 @@ def verify_guide_account(account_id: int):
 
 @manager_controller.route('/suspend/<int:account_id>', methods=['POST'])
 def suspend_account(account_id: int):
-    """
-    Suspends/bans a guide or trekker account, preventing login access.
-    """
+    
+    # Suspends/bans a guide or trekker account, preventing login access.
+    
     if not _is_manager_logged_in():
         return redirect('/portal/login')
 

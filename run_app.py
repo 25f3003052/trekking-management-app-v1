@@ -3,10 +3,9 @@ from flask import Flask, redirect, url_for
 from database.models import db, UserAccount
 
 def build_application():
-    """
-    Application factory for Project Epsilon 3.
-    Configures SQLAlchemy, registers controller Blueprints, and establishes root navigation.
-    """
+    
+    # Configures SQLAlchemy, registers controller Blueprints, and establishes root navigation.
+    
     app = Flask(__name__, template_folder='templates', static_folder='static')
 
     base_directory = os.path.abspath(os.path.dirname(__file__))
@@ -20,6 +19,8 @@ def build_application():
     from controllers.guide_controller import guide_controller
     from controllers.manager_controller import manager_controller
 
+    # imports routes from controllers files 
+
     app.register_blueprint(client_controller)
     app.register_blueprint(guide_controller)
     app.register_blueprint(manager_controller)
@@ -29,6 +30,7 @@ def build_application():
         return redirect('/portal/login')
 
     # Convenience compatibility redirects for users familiar with earlier versions
+
     @app.route('/client/login')
     def compat_login():
         return redirect('/portal/login')
@@ -47,7 +49,9 @@ def build_application():
 if __name__ == '__main__':
     app = build_application()
     with app.app_context():
-        db.create_all()
+         
+        db.create_all()   #inititates the database 
+
         # Ensure default manager/admin superuser exists
         if not UserAccount.query.filter_by(username='manager').first():
             default_mgr = UserAccount(

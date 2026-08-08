@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-# Initialize SQLAlchemy DB instance for Epsilon 3
+# Initialize SQLAlchemy DB instance 
 db = SQLAlchemy()
 
 class UserAccount(db.Model):
@@ -28,6 +28,7 @@ class UserAccount(db.Model):
         """Verifies a plaintext password against the stored secure hash."""
         return check_password_hash(self.password_hash, plain_text)
 
+    # if not used it would just show the memory location of instead of the attributes that are taken as input
     def __repr__(self) -> str:
         return f"<UserAccount id={self.user_id} username='{self.username}' role='{self.user_role}'>"
 
@@ -50,6 +51,10 @@ class Expedition(db.Model):
     expedition_status = db.Column(db.String(50), default='Pending Approval', nullable=False)
     lead_guide_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
 
+
+    # backref creates a 2 sided relation btw both the tables 
+    # lazy loading is simply like async await 
+    
     guide = db.relationship(
         'UserAccount',
         backref=db.backref('assigned_expeditions', lazy=True),

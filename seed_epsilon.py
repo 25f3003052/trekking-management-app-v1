@@ -7,9 +7,9 @@ from run_app import build_application
 from database.models import db, UserAccount, Expedition, TrekBooking
 
 def seed_database():
-    """
-    Populates the SQLite database with default demo credentials and sample Alpine expeditions.
-    """
+    
+    # adds demo credentials and sample expeditions.
+    
     app = build_application()
     with app.app_context():
         db.create_all()
@@ -52,7 +52,8 @@ def seed_database():
 
         db.session.commit()
 
-        # Re-fetch ids after commit
+
+        # Re-fetch all the ids after commit
         guide_id = guide_user.user_id if guide_user else None
         client_user = UserAccount.query.filter_by(username='alice_client').first()
 
@@ -111,7 +112,8 @@ def seed_database():
         if added_count:
             db.session.commit()
 
-        # Book 1 seat for alice_client on Patagonia if not already booked
+        # Book 1 seat for alice_client on Patagonia if not already booked just for reference 
+        
         patagonia = Expedition.query.filter_by(title="Patagonia Fitz Roy Traverse").first()
         if patagonia and client_user:
             existing_booking = TrekBooking.query.filter_by(

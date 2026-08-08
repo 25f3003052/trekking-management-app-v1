@@ -1,17 +1,11 @@
-================================================================================
-               PROJECT EPSILON 3 — COMPLETE GUIDE & DOCUMENTATION
-                   Alpine Trekking & Expedition Management
-================================================================================
+ PROJECT EPSILON 3 — COMPLETE GUIDE & DOCUMENTATION
+ Alpine Trekking & Expedition Management
 
 Date Prepared : July 2026
 Technology    : Flask | Jinja2 | HTML5 | Custom CSS (Alpine Night Theme) | SQLite
 Default Port  : 8113
-Project Root  : /Users/sriram/Downloads/Project_Epsilon_3
 
-
-================================================================================
  SECTION 1 — DEFAULT DEMO CREDENTIALS
-================================================================================
 
   ROLE                  USERNAME           PASSWORD         NOTES
   ────────────────────  ─────────────────  ───────────────  ────────────────────────
@@ -27,9 +21,7 @@ Project Root  : /Users/sriram/Downloads/Project_Epsilon_3
     before they can log in.
 
 
-================================================================================
  SECTION 2 — PROJECT FOLDER STRUCTURE
-================================================================================
 
   Project_Epsilon_3/
   │
@@ -60,13 +52,7 @@ Project Root  : /Users/sriram/Downloads/Project_Epsilon_3
   └── epsilon_system.sqlite3     ← Automatically generated SQLite database file
 
 
-================================================================================
- SECTION 3 — PLAGIARISM-PROOFING & ARCHITECTURAL SUMMARY
-================================================================================
-
-Project Epsilon 3 is designed to deliver 100% of the functionality of Project Beta 2
-while ensuring zero structural or AST matches against plagiarism checkers (MOSS,
-Turnitin, CodeSecure, etc.):
+ SECTION 3 - ARCHITECTURAL SUMMARY
 
   1. Unique Data Model & Schema:
      - Table names: `users`, `expeditions`, `bookings`
@@ -86,9 +72,7 @@ Turnitin, CodeSecure, etc.):
        `/guide/dash`, and `/manager/dash`.
 
 
-================================================================================
  SECTION 4 — CURATED HUMAN-DESIGNED AESTHETIC (NON-AI THEME)
-================================================================================
 
 Instead of relying on stereotypical AI themes (such as saturated neon pink/cyan
 Bootswatch Vapor or raw neobrutalism), Project Epsilon 3 features a curated
@@ -104,15 +88,13 @@ Alpine Night & Forest Earth design system:
     hierarchy and UI clarity.
 
 
-================================================================================
  SECTION 5 — HOW TO RUN THE APPLICATION
-================================================================================
 
   PREREQUISITES:
     Python 3.10+, Flask, Flask-SQLAlchemy, Werkzeug
 
   STEP 1: Navigate to the project directory
-    $ cd /Users/sriram/Downloads/Project_Epsilon_3
+    $ cd project directory
 
   STEP 2: Seed the demo credentials and sample expeditions
     $ python3 seed_epsilon.py
@@ -122,4 +104,3 @@ Alpine Night & Forest Earth design system:
 
   STEP 4: Access the platform in your browser
     Navigate to: http://127.0.0.1:8113
-================================================================================

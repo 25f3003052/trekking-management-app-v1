@@ -1,20 +1,22 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, flash
 from database.models import db, UserAccount, Expedition, TrekBooking
 
-client_controller = Blueprint('client_controller', __name__, url_prefix='/portal')
+# session stores info about the current logged-in user.
+
+client_controller = Blueprint('client_controller', __name__, url_prefix='/portal')  #creating blue print for routes
 
 
 def _is_client_logged_in() -> bool:
     """Helper check to verify if the current session belongs to a trekker/client."""
     return session.get('user_role') in ('trekker', 'client')
 
-
+# it simply means /portal/login
 @client_controller.route('/login', methods=['GET', 'POST'])
 def handle_login():
-    """
-    Handles user authentication for all roles (Trekker, Guide, Manager).
-    Routes to appropriate dashboards based on role verification.
-    """
+    
+    # Handles user authentication for all roles (Trekker, Guide, Manager).
+    # Routes to appropriate dashboards based on role verification.
+    
     if request.method == 'POST':
         username_input = request.form.get('username', '').strip()
         password_input = request.form.get('password', '').strip()
@@ -31,6 +33,7 @@ def handle_login():
             session['username'] = account.username
             session['user_role'] = account.user_role
 
+# proper routes as per user 
             if account.user_role == 'manager':
                 return redirect('/admin/dashboard')
             elif account.user_role == 'guide':
@@ -45,11 +48,11 @@ def handle_login():
 
 @client_controller.route('/register', methods=['GET', 'POST'])
 def handle_registration():
-    """
-    Allows new trekkers or prospective guides to register for an account.
-    """
+    
+    # Allows new trekkers or guides to register for an account.
+    
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        username = request.form.get('username', '').strip()     #('input' , 'default')
         password = request.form.get('password', '').strip()
         selected_role = request.form.get('role', 'trekker')
 
@@ -85,10 +88,9 @@ def handle_registration():
 
 @client_controller.route('/dashboard')
 def explorer_dashboard():
-    """
-    Trekker/Client explorer panel: shows open expeditions with optional search
-    and displays the logged-in trekker's existing reservations.
-    """
+    
+    # Trekker/Client explorer panel: shows open expeditions with optional search and displays the logged-in trekker's existing reservations.
+    
     if not _is_client_logged_in():
         return redirect('/portal/login')
 
@@ -113,9 +115,9 @@ def explorer_dashboard():
 
 @client_controller.route('/book/<int:exp_id>', methods=['POST'])
 def reserve_expedition(exp_id: int):
-    """
-    Books an available seat on the specified expedition for the logged-in trekker.
-    """
+    
+    # Books an available seat on the specified expedition for the logged-in trekker.
+    
     if not _is_client_logged_in():
         return redirect('/portal/login')
 
@@ -128,11 +130,14 @@ def reserve_expedition(exp_id: int):
         )
         db.session.add(new_booking)
         db.session.commit()
+        
+        # just like git we add commit into the tables of database 
 
     return redirect('/portal/dashboard')
 
 
 # Helper method added dynamically to check slots safely
+
 def _open_slots_valid(self):
     return self.expedition_status == 'Open' and self.available_seats > 0
 
@@ -141,6 +146,8 @@ Expedition.open_slots_valid = _open_slots_valid
 
 @client_controller.route('/logout')
 def handle_logout():
-    """Terminates session and returns user to login portal."""
+    # Terminates session and returns user to login portal
     session.clear()
     return redirect('/portal/login')
+
+
