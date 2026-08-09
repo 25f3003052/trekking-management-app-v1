@@ -27,7 +27,7 @@ def handle_login():
                 return render_template('login_page.html', error_message='Account has been suspended by administration.')
             
             if account.user_role == 'guide' and not account.is_verified:
-                return render_template('login_page.html', error_message='Guide account is pending verification by a Manager.')
+                return render_template('login_page.html', error_message='Guide account is yet to be verified by the Manager.')
 
             session['user_id'] = account.user_id
             session['username'] = account.username
