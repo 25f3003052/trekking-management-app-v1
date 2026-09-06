@@ -20,39 +20,7 @@ Default Port  : 8113
     registered guide accounts require manager verification via `/admin/dashboard`
     before they can log in.
 
-
- SECTION 2 — PROJECT FOLDER STRUCTURE
-
-  Project_Epsilon_3/
-  │
-  ├── run_app.py                 ← Main entry point and application factory (port 8113)
-  │
-  ├── database/
-  │   ├── __init__.py            ← Package initializer
-  │   └── models.py              ← SQLAlchemy schema (UserAccount, Expedition, TrekBooking)
-  │
-  ├── controllers/
-  │   ├── __init__.py            ← Package initializer
-  │   ├── client_controller.py   ← Auth, registration, explorer dashboard, and bookings (/portal)
-  │   ├── guide_controller.py    ← Guide dashboard and expedition status updates (/staff)
-  │   └── manager_controller.py  ← Manager console, expedition creation, roster CRUD (/admin)
-  │
-  ├── templates/                 ← Jinja2 HTML5 templates
-  │   ├── base_layout.html       ← Core layout with Alpine navigation bar & brand SVG
-  │   ├── login_page.html        ← Login & registration interface with demo info box
-  │   ├── explorer_panel.html    ← Trekker dashboard (catalog search + reservations)
-  │   ├── leader_panel.html      ← Guide dashboard (assigned expedition management)
-  │   └── admin_panel.html       ← Manager dashboard (expedition creation, roster, catalog)
-  │
-  ├── static/
-  │   └── css/
-  │       └── theme_epsilon.css  ← Human-designed Alpine Night & Mountain Amber stylesheet
-  │
-  ├── seed_epsilon.py            ← Script to seed demo credentials and sample expeditions
-  └── epsilon_system.sqlite3     ← Automatically generated SQLite database file
-
-
- SECTION 3 - ARCHITECTURAL SUMMARY
+ SECTION 2 - ARCHITECTURAL SUMMARY
 
   1. Unique Data Model & Schema:
      - Table names: `users`, `expeditions`, `bookings`
@@ -72,7 +40,7 @@ Default Port  : 8113
        `/guide/dash`, and `/manager/dash`.
 
 
- SECTION 4 — CURATED HUMAN-DESIGNED AESTHETIC (NON-AI THEME)
+ SECTION 3 — CURATED HUMAN-DESIGNED AESTHETIC (NON-AI THEME)
 
 Instead of relying on stereotypical AI themes (such as saturated neon pink/cyan
 Bootswatch Vapor or raw neobrutalism), Project Epsilon 3 features a curated
@@ -88,7 +56,7 @@ Alpine Night & Forest Earth design system:
     hierarchy and UI clarity.
 
 
- SECTION 5 — HOW TO RUN THE APPLICATION
+ SECTION 4 — HOW TO RUN THE APPLICATION
 
   PREREQUISITES:
     Python 3.10+, Flask, Flask-SQLAlchemy, Werkzeug
